@@ -1471,7 +1471,13 @@ def zmeUserStoragePath(sub_path = None):
         os.makedirs(path)
     return path
 def zmeSetupLogging(name, bVerbose=True, bNoStdOutput=False):
-    fn =  '%s/%s-%s.log' % (zmeUserStoragePath(), name, strftime("%Y-%m-%d", gmtime()))
+    if 'ZME_LOGPATH' in os.environ:
+        log_path = os.environ['ZME_LOGPATH']
+        if not os.path.isdir(log_path):
+            os.makedirs(log_path)
+    else:
+        log_path = zmeUserStoragePath()
+    fn =  '%s/%s-%s.log' % (log_path, name, strftime("%Y-%m-%d", gmtime()))
     format_str = '%(levelname)-8s [%(asctime)s]  %(message)s'
     lev = logging.WARNING
     if bVerbose:
