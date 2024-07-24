@@ -17,3 +17,8 @@ Typical usage:
 # External python packages installation
 
     python3 -m pip install pyserial asyncio intelhex websockets pycryptodome colorama requests
+
+# Logs
+
+By default logs are placed into ~/ZMEStorage directory.
+This can be changed by setting ZME\_LOGPATH environment variable.
