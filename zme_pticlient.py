@@ -798,8 +798,7 @@ def tracePTIFunc(args):
             finallizeStatus()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)-8s [%(asctime)s]  %(message)s', level=logging.DEBUG,
-                    filename='%s/ZMEPTIClient-%s.log' % (getScriptPath(), strftime("%Y-%m-%d", gmtime())))
+    zmeSetupLogging("ZMEPTIClient", True, True)
 
     def dummyFunc(args):
         print("*** Platform: %s Version: %s ***"%(platform.system(), MY_VERSION))
