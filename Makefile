@@ -14,3 +14,4 @@ clean:
 install: dist
 	mkdir -p $(DESTDIR)
 	unxz -c zme_radiotools.txz | ( cd $(DESTDIR); tar -x --exclude="zme_radiotools.crontab.in" --no-same-owner )
+	sed -re 's/@ZME_DESTDIR@/$(subst /,\/,$(DESTDIR))/' zme_radiotools.crontab.in > /etc/cron.d/zme_radiotools
