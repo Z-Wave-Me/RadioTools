@@ -17,3 +17,15 @@ install: dist
 	sed -re 's/@ZME_RTHOME@/$(subst /,\/,$(ZME_RTHOME))/' zme_radiotools.crontab.in > /etc/cron.d/zme_radiotools
 	sed -re 's/@ZME_RTHOME@/$(subst /,\/,$(ZME_RTHOME))/' zme_radiotools.initd.in > /etc/init.d/zme_radiotools
 	chmod a+rx /etc/init.d/zme_radiotools
+	@echo
+	@echo
+	@echo '##########################################'
+	@echo '#                  INFO                  #'
+	@echo '##########################################'
+	@echo Now you can add /etc/init.d/zme_radiotools to autostart:
+	@echo
+	@echo systemctl enable zme_radiotools
+	@echo OR:
+	@echo update-rc.d zme_radiotools defaults
+	@echo
+	@echo
