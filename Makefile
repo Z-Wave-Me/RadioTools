@@ -1,4 +1,4 @@
-DESTDIR := /opt/zme_radiotools
+ZME_RTHOME := /opt/zme_radiotools
 
 .PHONY: install dist clean clean-all
 
@@ -12,8 +12,8 @@ clean:
 	rm -f *~
 
 install: dist
-	mkdir -p $(DESTDIR) /var/cache/zme_radiotools
-	unxz -c zme_radiotools.txz | ( cd $(DESTDIR); tar -x --exclude="zme_radiotools.crontab.in" --exclude="zme_radiotools.initd.in" --no-same-owner )
-	sed -re 's/@ZME_DESTDIR@/$(subst /,\/,$(DESTDIR))/' zme_radiotools.crontab.in > /etc/cron.d/zme_radiotools
-	sed -re 's/@ZME_DESTDIR@/$(subst /,\/,$(DESTDIR))/' zme_radiotools.initd.in > /etc/init.d/zme_radiotools
+	mkdir -p $(ZME_RTHOME) /var/cache/zme_radiotools
+	unxz -c zme_radiotools.txz | ( cd $(ZME_RTHOME); tar -x --exclude="zme_radiotools.crontab.in" --exclude="zme_radiotools.initd.in" --no-same-owner )
+	sed -re 's/@ZME_RTHOME@/$(subst /,\/,$(ZME_RTHOME))/' zme_radiotools.crontab.in > /etc/cron.d/zme_radiotools
+	sed -re 's/@ZME_RTHOME@/$(subst /,\/,$(ZME_RTHOME))/' zme_radiotools.initd.in > /etc/init.d/zme_radiotools
 	chmod a+rx /etc/init.d/zme_radiotools

@@ -10,14 +10,14 @@
 # Short-Description: zme_radiotools scripts
 ### END INIT INFO
 
-. @ZME_DESTDIR@/zme_radiotools.conf
+. @ZME_RTHOME@/zme_radiotools.conf
 
 runuser=${ZME_RUNUSER:-root}
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DESC="zme_radiotools"
 NAME="zme_radiotools"
-DAEMON=@ZME_DESTDIR@/sv.simple.sh
+DAEMON=@ZME_RTHOME@/sv.simple.sh
 PIDFILE=/var/run/SOME.pid
 export PIDFILE
 export ZME_LOGPATH
@@ -57,8 +57,8 @@ do_start()
 	local CMD
 	export CMD
 
-	. @ZME_DESTDIR@/zme_radiotools.conf
-	cp -f @ZME_DESTDIR@/zme_radiotools.conf /var/cache/zme_radiotools/
+	. @ZME_RTHOME@/zme_radiotools.conf
+	cp -f @ZME_RTHOME@/zme_radiotools.conf /var/cache/zme_radiotools/
 
 	for sdesc in \
 	  "zme_transmission python3 zme_transmission.py svc -c transmission.json" \
