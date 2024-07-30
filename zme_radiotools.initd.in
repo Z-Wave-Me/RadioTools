@@ -1,0 +1,166 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          zme_radiotools
+# Required-Start:    $local_fs networking
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: zme_radiotools scripts
+### END INIT INFO
+
+. @ZME_RTHOME@/zme_radiotools.conf
+
+runuser=${ZME_RUNUSER:-root}
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="zme_radiotools"
+NAME="zme_radiotools"
+DAEMON=@ZME_RTHOME@/sv.simple.sh
+PIDFILE=/var/run/SOME.pid
+export PIDFILE
+export ZME_LOGPATH
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+#. /lib/lsb/init-functions
+
+# Exit if the DAEMON is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Load the VERBOSE setting and other rcS variables
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+
+
+is_true()
+{
+	case "$1" in
+		[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1)
+			return 0
+			;;
+		[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0)
+			return 1
+			;;
+		*)
+			echo "Wrong value for boolean value: $1" >&2
+			exit 3
+			;;
+	esac
+}
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	local CMD
+	export CMD
+
+	. @ZME_RTHOME@/zme_radiotools.conf
+	cp -f @ZME_RTHOME@/zme_radiotools.conf /var/cache/zme_radiotools/
+
+	for sdesc in \
+	  "zme_transmission python3 zme_transmission.py svc -c transmission.json" \
+	  "zme_webserial python3 zme_webserial.py svc" \
+	  "zme_dummy python3 zme_dummy.py some args"; do
+		sname=${sdesc%% *}
+		if is_true `eval echo \\$${sname}_ENABLE`; then
+			PIDFILE=/var/run/${sname}.pid
+			CMD=${sdesc#* }
+			start-stop-daemon --start --pidfile "$PIDFILE" \
+			  --exec $DAEMON --user $runuser -- start
+			if [ $? -ne 0 ]; then
+				return 2
+			fi
+		fi
+	done
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	. /var/cache/zme_radiotools/zme_radiotools.conf
+
+	for sname in \
+	  zme_transmission \
+	  zme_webserial \
+	  zme_dummy; do
+		if is_true `eval echo \\$${sname}_ENABLE`; then
+			PIDFILE=/var/run/${sname}.pid
+			start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 \
+			  --pidfile "$PIDFILE" --user $runuser
+			if [ $? -ne 0 ]; then
+				echo -n "($sname FAIL) "
+				continue
+			fi
+			rm -f "$PIDFILE"
+		fi
+	done
+}
+
+log_daemon_msg()
+{
+	echo -n "$1: $2 "
+}
+
+log_end_msg()
+{
+	if [ "$1" = 0 ]; then
+		echo OK
+	else
+		echo FAIL
+	fi
+}
+
+case "$1" in
+start)
+	if [ -f /var/run/zme_radiotools.started ]; then
+		echo "Already started" >&2
+		exit 1
+	fi
+	touch /var/run/zme_radiotools.started
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+	0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+	2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+	0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+	2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	rm -f /var/run/zme_radiotools.started
+   ;;
+status)
+	status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+	;;
+restart)
+	log_daemon_msg "Restarting $DESC" "$NAME"
+	do_stop
+	case "$?" in
+	0|1)
+		do_start
+		case "$?" in
+		0) log_end_msg 0 ;;
+		1) log_end_msg 1 ;; # Old process is still running
+		*) log_end_msg 1 ;; # Failed to start
+		esac
+		;;
+	*)
+		# Failed to stop
+		log_end_msg 1
+		;;
+	esac
+	;;
+*)
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+	exit 3
+	;;
+esac

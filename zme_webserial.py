@@ -319,8 +319,7 @@ class WebSerialService:
     def __del__(self):
         self.stop()
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)-8s [%(asctime)s]  %(message)s', level=logging.DEBUG,
-                    filename='%s/ZMEWebSerial-%s.log' % (getScriptPath(), strftime("%Y-%m-%d", gmtime())))
+    zmeSetupLogging("ZMEWebSerial", True, True)
     def dummyFunc(args):
         print("*** Platform: %s Version: %s ***"%(platform.system(), MY_VERSION))
     def serviceFunc(args):

@@ -442,8 +442,7 @@ if __name__ == "__main__":
     MY_VERSION = "01b1"
     import zme_pticlient
     import zme_razberryapi
-    logging.basicConfig(format='%(levelname)-8s [%(asctime)s]  %(message)s', level=logging.DEBUG,
-                    filename='%s/ZMEModemClient-%s.log' % (getScriptPath(), strftime("%Y-%m-%d", gmtime())))
+    zmeSetupLogging("ZMEModemClient", True, True)
 
     def dummyFunc(args):
         print("*** Platform: %s Version: %s ***"%(platform.system(), MY_VERSION))

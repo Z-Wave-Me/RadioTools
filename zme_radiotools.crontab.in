@@ -1,0 +1,3 @@
+#MAILTO=""
+
+0 1  * * *  root	@ZME_RTHOME@/zme_logsclean.sh
