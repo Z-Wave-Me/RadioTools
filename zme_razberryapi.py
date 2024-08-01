@@ -15,9 +15,66 @@ from common.zme_sapi import SerialAPICommand
 from common.zme_devsn import ZMEDeviceSn
 
 MY_VERSION = "0.1b1"
-
+class RazberryLicense:
+    FORMAT_HEXSTR = 0
+    FORMAT_BYTEARR = 1
+    FLAGS_NAMES = { "STATIC":{"bit":0, "description":"Enables static cotroller mode. User can switch Razberry to \"staic\" mode instead of default \"bridge\""}, 
+                    "MAX_POWER":{"bit":1, "description":"If set user can increase power amplifier up to 24dBm. Without that flag the user is limited by 7dBm."}, 
+                    "BACKUP":{"bit":2, "description":"Enables backup/restore operations."}, 
+                    "WUP":{"bit":3, "description":"If controller doesn't respond to WakeUp Notification, razberry responds itself with WakUp No more information. This prevents device battery discharge."}, 
+                    "ADV_DIAG":{"bit":4, "description":"Enables backward RSSI dump and other extendended ZME features."}, 
+                    "LONGRANGE":{"bit":5, "description":"Enables Z-Wave Long Range support."}, 
+                    "ULTRA_UART":{"bit":6, "description":"Enables UART baudrate setting command."}, 
+                    "SWAP_VENDOR":{"bit":7, "description":"Maps subvendor to vendor field in controller information."},
+                    "PROMISC":{"bit":8, "description":"Enables promisc functionality. Controller dumps all the packages in its network."}, 
+                    "REAL_ZNIFFER":{"bit":9, "description":"Enables real zniffer. Controller dumps all Z-Wave packages it receives."},
+                    "JAMMING_DETECTOR":{"bit":10, "description":"Enables jamming detection notifications."},
+                    "PTI":{"bit":11, "description":"Enables Packet Trace Interface. Device dumps all the packets it sends and receives. This uses external UART interface and doesn't consume time of the main core."},
+                    "MODEM":{"bit":12, "description":"Razberry works as direct transmitter."}
+                    }
+    VENDOR_NAMES = {0x0000:"<<EMPTY_LICENSE>>", 0x0115:"Z-Wave.Me", 0x0147:"Z-Wave.Me RaZberry"}
+    FLAGS_SIZE = 0x08
+    CRC_INDEX = 30
+    
+    def __init__(self, raw, format = FORMAT_BYTEARR):
+        self._raw_data = raw
+        self._md = {}
+        # 00 00 01 15 FF 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A6 06 B4 43 1D E0 B4 63 1D E0 B4 63 D8 A6 11 1C
+        self._md["vendor_id"] = (raw[0] << 8) | raw[1]
+        self._md["vendor_name"] = "UNKNOWN"
+        if self._md["vendor_id"] in RazberryLicense.VENDOR_NAMES:
+            self._md["vendor_name"] = RazberryLicense.VENDOR_NAMES[self._md["vendor_id"]]
+        self._md["max_nodes"] = raw[2]
+        self._md["flags"] = []
+        for byte_i in range(RazberryLicense.FLAGS_SIZE):
+            for bit_i in range(8):
+                index = (byte_i << 3) + bit_i
+                if (raw[3+byte_i] & (1<<bit_i)):
+                    for name in RazberryLicense.FLAGS_NAMES:
+                        if RazberryLicense.FLAGS_NAMES[name]["bit"] == index:
+                            self._md["flags"] += [name]
+        self._md["crc16"] = (raw[RazberryLicense.CRC_INDEX+1] << 8) + raw[RazberryLicense.CRC_INDEX]
+        crc16_test = calcSigmaCRC16(0x1D0F, raw, 0, RazberryLicense.CRC_INDEX)
+        #print("CRC1=%4x CRC2=%4x"%(self._md["crc16"], crc16_test))
+        self._md["valid"] =  (crc16_test == self._md["crc16"]) 
+    def toText(self):
+        text = ""
+        text += "\t\tVendor: %04x (%s)\n"%(self._md["vendor_id"], self._md["vendor_name"])
+        text += "\t\tNode Limit: %02x\n"%(self._md["max_nodes"])
+        text += "\t\tFlags:"
+        for f in self._md["flags"]:
+            text += "\n\t\t\t %s"%(f)
+        text += "\n\t\tValidation:"
+        if self._md["valid"]:
+            text += "OK"
+        else:
+            text += "FAILED"
+        return text
+    def getMetadata(self):
+        return self._md
 class RazberrySAPICmd(SerialAPICommand):
-    ZME_RAZ_KEY = "0000000000000000000000000000000000000000000000000000000000000000"
+    #ZME_RAZ_KEY = "0000000000000000000000000000000000000000000000000000000000000000"
+    ZME_RAZ_KEY = "867802098d894d418f3fd2042eecf5c4058cb936a9cc4b87913936b743183742"
     ZME_RAZ_INFOADDR = 0xFFFF00
     ZME_RAZ_INFOLEN = 0x31
     
@@ -89,10 +146,17 @@ class RazberrySAPICmd(SerialAPICommand):
 
     def bindToExistedInterface(self, instance):   
         self.port = instance.port
+        self._parent_instance = instance
         self.rcv_sof_timeout = 3.5
         self._port_name = instance._port_name
         self._port_baud = instance._port_baud
         self._binded_interface = True
+    def changeBaudOnTheGo(self, new_baud):
+        if self._binded_interface:
+            self._parent_instance.setBaudOnTheGo(new_baud)
+            self.bindToExistedInterface(self._parent_instance)
+        else:
+            self.setBaudOnTheGo(new_baud)
     def cryptData(self, d, iv, key=None):
         main_key = key
         if key == None:

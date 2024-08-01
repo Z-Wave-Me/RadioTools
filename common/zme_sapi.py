@@ -41,6 +41,7 @@ class SerialAPICommand:
         self.rcv_sof_timeout = 3.5
         self._port_name = mport
         self._port_baud = baud
+        self._port_dtr = dtr
         self._use_ext_api = False
         self._send_quant_size = 240
 
@@ -48,7 +49,12 @@ class SerialAPICommand:
         self.rcv_sof_timeout = timeout
     def getRcvSofTimeout(self) -> float:
         return (self.rcv_sof_timeout)
-
+    def setBaudOnTheGo(self, new_baudrate):
+        if self.port.isOpened():
+            self.port.Close(False, True)
+        self.port = Port(self._port_name, new_baudrate, dtr=self._port_dtr)
+        self._port_baud = new_baudrate
+        self.port.Open(True)
     def enableExtAPI(self, en = True):
          self._use_ext_api = en
     def setDataQuantum(self, sz):
@@ -765,11 +771,16 @@ class SerialAPIUtilities:
         return md
     def detectBaud(self, baud):
         device = self.cmdinterface._port_name
+        common_baud_list = [115200, 230400, 460800, 921600]
         if baud == 0:
             baud = 115200
         baud_list = [baud]
         if baud == -1:
-            baud_list = [115200, 230400, 460800, 921600]
+            baud_list = common_baud_list
+        else:
+            for b in common_baud_list:
+                if not (b in baud_list):
+                    baud_list += [b]
         for b in baud_list:
             logging.info("Trying baudrate:%s"%(b))
             self.cmdinterface.port = Port(device, b)

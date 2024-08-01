@@ -193,6 +193,7 @@ class ZMEModemListener(LoopingThread):
         if mode == None:
             mode = SerialAPIUtilities.DETECT_MODE_AUTO
         res,prod_md = self._sapi.extractProductInfo(mode, self._baud)
+        print("ProductInfo:%s"%(prod_md))
         if (res == 0):
             #self._baud = prod_md["uart_baudrate"]
             if (prod_md["product_type"] == "Z-Uno"):
@@ -226,6 +227,15 @@ class ZMEModemListener(LoopingThread):
                     #sync = zsapi.syncWithController(10.0)
                     #if not sync:
                     #    return False
+                    if prod_md["uart_baudrate"] != self._baud:
+                        logging.info("Setuo new SAPI device baudrate:%d"%(self._baud))
+                        zsapi.setupUARTBaudrate(self._baud)
+                        #zsapi.softReset()   
+                        time.sleep(0.02) 
+                        logging.info("Switching to new port object")
+                        zsapi.changeBaudOnTheGo(self._baud)
+                        #zsapi = RazberrySAPICmd(self._port_name, self._baud)
+                        
                     md = zsapi.getBoardInfo()
                     md["uart_baudrate"] = self._baud
                     logging.debug("MD:%s"%(md))

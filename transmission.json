@@ -5,7 +5,7 @@
     "tx_power":50,
     "flirs_nodes":[5],
     "hubs":[
-        {"name":"EU subnetwork", "device_type":"z-uno", "region":"EU", "baudrate":921600, "uuid":"0001", "port_prefix":"/dev/cu.SLAB", "index":0, "nodes":[3]},
-        {"name":"RU subnetwork", "device_type":"z-uno", "region":"RU", "baudrate":921600, "uuid":"04be9584cfe9ea1199fd7a80e9d60aec", "port_prefix":"/dev/cu.SLAB",  "index":0, "nodes":[1, 2]}
+        {"name":"RU subnetwork", "device_type":"sapi", "region":"RU", "baudrate":230400, "uuid":"04be9584cfe9ea1199fd7a80e9d60aec", "port_prefix":"/dev/cu.SLAB",  "index":0, "nodes":[1, 2]},
+        {"name":"EU subnetwork", "device_type":"z-uno", "region":"EU", "baudrate":921600, "uuid":"0001", "port_prefix":"/dev/cu.SLAB", "index":0, "nodes":[3]}
     ]
 }
