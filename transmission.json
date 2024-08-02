@@ -1,11 +1,11 @@
 {
     "homeid":"D619CDD9",
     "region":"EU",
-    "hosts":[{"ip":null,"name":"local"}],
+    "hosts":[{"ip":null,"name":"local"}, {"ip":"192.168.2.23:8998","name":"Raspberry. Test Z-Wave controller."}],
     "tx_power":50,
     "flirs_nodes":[5],
     "hubs":[
-        {"name":"RU subnetwork", "device_type":"sapi", "region":"RU", "baudrate":230400, "uuid":"04be9584cfe9ea1199fd7a80e9d60aec", "port_prefix":"/dev/cu.SLAB",  "index":0, "nodes":[1, 2]},
+        {"name":"RU subnetwork", "device_type":"sapi", "region":"RU", "baudrate":921600,  "uuid":"667074e5cbe9ea11a74b7a80e9d60aec",  "index":0, "nodes":[1, 2]},
         {"name":"EU subnetwork", "device_type":"z-uno", "region":"EU", "baudrate":921600, "uuid":"0001", "port_prefix":"/dev/cu.SLAB", "index":0, "nodes":[3]}
     ]
 }

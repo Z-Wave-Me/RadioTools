@@ -238,6 +238,7 @@ class Port:
             if self._host == None:
                 self._ser.open()
                 self._port_opened = True
+                #logging.
             else:
                 self._createWSThread()
                 #print("*** OPEN REQUEST:%s"%(self._dev_name))
@@ -400,6 +401,7 @@ class Port:
                 logging.info("Port metadata for host:%s MD:%s"%(host, data))
                 return data["info"]
         except:
+            logging.error("WS Connection Error:%s"%(traceback.format_exc()))
             return None
     @staticmethod
     def __extractHostInfo(host):
@@ -438,6 +440,7 @@ class Port:
                 md += [p]
         else:
             md_ext = Port.__extractHostInfo(host)
+            #print("MD_EX:%s"%(md_ext))
             if md_ext == None:
                 md_ext = []
             if vidpid_filter == None:

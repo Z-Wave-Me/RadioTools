@@ -193,7 +193,7 @@ class ZMEModemListener(LoopingThread):
         if mode == None:
             mode = SerialAPIUtilities.DETECT_MODE_AUTO
         res,prod_md = self._sapi.extractProductInfo(mode, self._baud)
-        print("ProductInfo:%s"%(prod_md))
+        #print("ProductInfo:%s"%(prod_md))
         if (res == 0):
             #self._baud = prod_md["uart_baudrate"]
             if (prod_md["product_type"] == "Z-Uno"):
@@ -351,16 +351,26 @@ class ZMEModemListener(LoopingThread):
                 logging.error("ZMEModemListener.Disconnect exception:%s"%(traceback.format_exc()))
             self._setState(ZMEModemListener.MODE_STOPPED)
 
+    def _sendModemMSG(self, addr, data, retries=3, wait=0.05):
+        while retries:
+            res = self._sapi.cmdinterface.writeNVM(addr, data)
+            if res[0] == SerialAPICommand.RECV_OK:
+                #print("-RESP:resp%s"%(res))
+                return True
+            logging.warning("-UNRESP: result:%s "%(res))
+            retries -= 1
+            time.sleep(wait)
+        return False
     def _sendWaitingTxMessage(self):
         p = self._popTxMessage()
         if p != None:
             if p[0] == 0:
-                self._sapi.cmdinterface.writeNVM(0xABCD00, p[1])
+                self._sendModemMSG(0xABCD00, p[1])
                 if self._tx_loop_back:
                     pkg = self.makeTXProtocolMD(p[1])
                     self._pushRxPckg(pkg)
             elif p[0] == 1:
-                self._sapi.cmdinterface.writeNVM(0xABCF01, p[1])
+                self._sendModemMSG(0xABCF01, p[1])
     def _receiverFunc(self):
         state = self.getState()
         if state == ZMEModemListener.MODE_START:

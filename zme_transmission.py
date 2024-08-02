@@ -283,6 +283,8 @@ def trunsmissionFunc(args):
         for entity in lst:
             uuid = entity["uuid"]
             serial_name = entity["name"]
+            if host["ip"]:
+                serial_name += "@%s"%(host["ip"])
             if not uuid in serial_map:
                 serial_map[uuid] = []
             serial_map[uuid] += [serial_name]
@@ -330,7 +332,7 @@ def trunsmissionFunc(args):
                         port_name = pn
                     j += 1
             if port_name == None:
-                printError("Can't find port with prefix:%x index (%d) of serial port for uuid (%s). (MAX=%d)"%(ep["port_prefix"], ep_index, ep_uuid, len(serial_map[ep_uuid])))
+                printError("Can't find port with prefix:%s index (%d) of serial port for uuid (%s). (MAX=%d)"%(ep["port_prefix"], ep_index, ep_uuid, len(serial_map[ep_uuid])))
                 return 102
         else:
             port_name = serial_map[ep_uuid][ep_index]
